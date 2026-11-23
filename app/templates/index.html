@@ -1,0 +1,339 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Plant Disease Detection</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f3f8f2;
+            color: #263b2b;
+        }
+
+        nav {
+            background: #1b5e20;
+            color: white;
+            padding: 20px 8%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        nav h2 {
+            font-size: 24px;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 65px 20px;
+            background: linear-gradient(
+                135deg,
+                #e8f5e9,
+                #c8e6c9
+            );
+        }
+
+        .hero h1 {
+            font-size: 38px;
+            color: #1b5e20;
+            margin-bottom: 15px;
+        }
+
+        .hero p {
+            font-size: 17px;
+            color: #45634a;
+            line-height: 1.6;
+        }
+
+        .detection {
+            max-width: 750px;
+            margin: 40px auto;
+            padding: 35px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+
+        .detection h2 {
+            color: #1b5e20;
+            margin-bottom: 15px;
+        }
+
+        .detection p {
+            margin-bottom: 20px;
+            color: #666;
+        }
+
+        .upload-box {
+            border: 2px dashed #4caf50;
+            border-radius: 12px;
+            padding: 35px 20px;
+            background: #f8fff8;
+        }
+
+        .upload-box h3 {
+            margin-bottom: 20px;
+            color: #2e7d32;
+        }
+
+        input[type="file"] {
+            display: block;
+            margin: 15px auto;
+            max-width: 100%;
+        }
+
+        #preview {
+            display: none;
+            width: 220px;
+            max-width: 100%;
+            height: 220px;
+            object-fit: cover;
+            border-radius: 12px;
+            margin: 20px auto;
+        }
+
+        button {
+            background: #2e7d32;
+            color: white;
+            padding: 14px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #1b5e20;
+        }
+
+        .result {
+            max-width: 750px;
+            margin: 30px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+
+        .result h2 {
+            color: #1b5e20;
+            margin: 15px 0;
+        }
+
+        .confidence {
+            color: #2e7d32;
+            font-size: 19px;
+            font-weight: bold;
+            margin: 15px 0;
+        }
+
+        .error {
+            color: #c62828;
+            margin-top: 15px;
+        }
+
+        footer {
+            background: #1b5e20;
+            color: white;
+            text-align: center;
+            padding: 22px;
+            margin-top: 50px;
+        }
+
+        @media (max-width: 600px) {
+            .hero h1 {
+                font-size: 28px;
+            }
+
+            .detection {
+                margin: 20px;
+                padding: 22px;
+            }
+
+            nav {
+                flex-direction: column;
+                gap: 12px;
+            }
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <!-- Navigation Bar -->
+
+    <nav>
+        <h2>🌱 PlantCare AI</h2>
+
+        <div>
+            <a href="/">Home</a>
+            <a href="#detect">Detect Disease</a>
+        </div>
+    </nav>
+
+
+    <!-- Hero Section -->
+
+    <section class="hero">
+
+        <h1>Plant Leaf Disease Detection</h1>
+
+        <p>
+            Detect plant diseases using Artificial Intelligence
+            and Deep Learning.
+            <br>
+            Upload a leaf image and get your prediction instantly.
+        </p>
+
+    </section>
+
+
+    <!-- Image Upload Section -->
+
+    <section id="detect" class="detection">
+
+        <h2>🔍 Detect Plant Disease</h2>
+
+        <p>
+            Upload an image of a plant leaf to identify
+            its disease.
+        </p>
+
+        <form id="uploadForm"
+              action="/predict"
+              method="POST"
+              enctype="multipart/form-data">
+
+            <div class="upload-box">
+
+                <h3>Upload Leaf Image</h3>
+
+                <input
+                    type="file"
+                    name="file"
+                    id="imageInput"
+                    accept="image/*"
+                    required
+                >
+
+                <!-- Image Preview -->
+
+                <img
+                    id="preview"
+                    alt="Uploaded leaf preview"
+                >
+
+                <br>
+
+                <button type="submit">
+                    Predict Disease
+                </button>
+
+            </div>
+
+        </form>
+
+    </section>
+
+
+    <!-- Prediction Result Section -->
+
+    {% if prediction %}
+
+    <section class="result">
+
+        <h2>🌿 Prediction Result</h2>
+
+        <p>Your plant disease prediction is:</p>
+
+        <h2>
+            {{ prediction | replace('___', ' - ') | replace('_', ' ') }}
+        </h2>
+
+        <p class="confidence">
+            Confidence: {{ confidence }}%
+        </p>
+
+        <p>
+            Analysis completed successfully.
+        </p>
+
+    </section>
+
+    {% endif %}
+
+
+    <!-- Footer -->
+
+    <footer>
+
+        <p>
+            © 2026 PlantCare AI |
+            Plant Disease Detection System
+        </p>
+
+        <p>
+            Powered by Python, Flask and TensorFlow
+        </p>
+
+    </footer>
+
+
+    <!-- JavaScript Image Preview -->
+
+    <script>
+
+        const imageInput = document.getElementById("imageInput");
+
+        const preview = document.getElementById("preview");
+
+        imageInput.addEventListener("change", function(event) {
+
+            const file = event.target.files[0];
+
+            if (file) {
+
+                if (!file.type.startsWith("image/")) {
+                    alert("Please select a valid image.");
+                    imageInput.value = "";
+                    preview.style.display = "none";
+                    return;
+                }
+
+                preview.src = URL.createObjectURL(file);
+
+                preview.style.display = "block";
+
+            }
+
+        });
+
+    </script>
+
+</body>
+
+</html>
